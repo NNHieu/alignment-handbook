@@ -23,7 +23,7 @@ from transformers import AutoModelForCausalLM, set_seed
 
 from alignment import (
     DataArguments,
-    DPOConfig,
+    # DPOConfig,
     H4ArgumentParser,
     ModelArguments,
     apply_chat_template,
@@ -37,7 +37,11 @@ from alignment import (
     is_adapter_model,
 )
 from peft import PeftConfig, PeftModel
-from trl import DPOTrainer
+# from trl import DPOTrainer
+import sys
+sys.path.append("/home/tunghoang/hieunn/Alignment/alignment-handbook")
+from src.alignment.configs import DPOConfig
+from src.custom_trainers.dpo_trainer import DPOTrainer
 
 from huggingface_hub import login as hf_login
 from dotenv import dotenv_values
@@ -181,13 +185,15 @@ def main():
         )
         model_kwargs = None
 
-    ref_model = model
-    ref_model_kwargs = model_kwargs
+    # ref_model = model
+    # ref_model_kwargs = model_kwargs
+    ref_model = None
+    ref_model_kwargs = None
 
     if model_args.use_peft is True:
         ref_model = None
         ref_model_kwargs = None
-    
+
     #########################
     # Instantiate DPO trainer
     #########################
@@ -206,7 +212,8 @@ def main():
         peft_config=get_peft_config(model_args),
         loss_type=training_args.loss_type,
         # Added
-        precompute_ref_log_probs=True
+        precompute_ref_log_probs=True,
+        precompute_ref_log_probs_path=training_args.precompute_ref_log_probs_path
     )
 
     ###############

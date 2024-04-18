@@ -281,7 +281,7 @@ class DPOConfig(transformers.TrainingArguments):
     optim: Optional[str] = field(default="rmsprop")
     remove_unused_columns: bool = field(default=False)
     loss_type: Optional[str] = field(default="sigmoid", metadata={"help": ("The loss type for DPO.")})
-
+    precompute_ref_log_probs_path: Optional[str] = field(default=None, metadata={"help": ("The path to precomputed logprobs.")})
 
 @dataclass
 class ORPOConfig(transformers.TrainingArguments):
