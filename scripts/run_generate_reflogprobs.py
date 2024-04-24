@@ -23,7 +23,7 @@ from transformers import AutoModelForCausalLM, set_seed
 
 from alignment import (
     DataArguments,
-    DPOConfig,
+    # DPOConfig,
     H4ArgumentParser,
     ModelArguments,
     apply_chat_template,
@@ -37,7 +37,11 @@ from alignment import (
     is_adapter_model,
 )
 from peft import PeftConfig, PeftModel
-from trl import DPOTrainer
+# from trl import DPOTrainer
+import sys
+sys.path.append("/home/ubuntu/hieu.nn/Lang/alignment-handbook")
+from src.alignment.configs import DPOConfig
+from src.custom_trainers.dpo_trainer import DPOTrainer
 
 from huggingface_hub import login as hf_login
 from dotenv import dotenv_values
@@ -181,13 +185,15 @@ def main():
         )
         model_kwargs = None
 
-    ref_model = model
-    ref_model_kwargs = model_kwargs
+    # ref_model = model
+    # ref_model_kwargs = model_kwargs
+    ref_model = None
+    ref_model_kwargs = None
 
     if model_args.use_peft is True:
         ref_model = None
         ref_model_kwargs = None
-    
+
     #########################
     # Instantiate DPO trainer
     #########################
@@ -206,61 +212,64 @@ def main():
         peft_config=get_peft_config(model_args),
         loss_type=training_args.loss_type,
         # Added
-        # precompute_ref_log_probs=True
+        precompute_ref_log_probs=True,
+        precompute_ref_log_probs_path=training_args.precompute_ref_log_probs_path
     )
 
     ###############
     # Training loop
     ###############
-    checkpoint = None
-    if training_args.resume_from_checkpoint is not None:
-        checkpoint = training_args.resume_from_checkpoint
-    elif last_checkpoint is not None:
-        checkpoint = last_checkpoint
-    train_result = trainer.train(resume_from_checkpoint=checkpoint)
-    metrics = train_result.metrics
-    metrics["train_samples"] = len(raw_datasets["train"])
-    trainer.log_metrics("train", metrics)
-    trainer.save_metrics("train", metrics)
-    trainer.save_state()
+    # checkpoint = None
+    # if training_args.resume_from_checkpoint is not None:
+    #     checkpoint = training_args.resume_from_checkpoint
+    # elif last_checkpoint is not None:
+    #     checkpoint = last_checkpoint
+    # train_result = trainer.train()
+    trainer.accelerator.free_memory()
+    trainer.get_train_dataloader()
+    # metrics = train_result.metrics
+    # metrics["train_samples"] = len(raw_datasets["train"])
+    # trainer.log_metrics("train", metrics)
+    # trainer.save_metrics("train", metrics)
+    # trainer.save_state()
 
-    logger.info("*** Training complete ***")
+    logger.info("*** Generating complete ***")
 
     ##################################
     # Save model and create model card
     ##################################
-    logger.info("*** Save model ***")
-    trainer.save_model(training_args.output_dir)
-    logger.info(f"Model saved to {training_args.output_dir}")
+    # logger.info("*** Save model ***")
+    # trainer.save_model(training_args.output_dir)
+    # logger.info(f"Model saved to {training_args.output_dir}")
 
     # Save everything else on main process
-    kwargs = {
-        "finetuned_from": model_args.model_name_or_path,
-        "dataset": list(data_args.dataset_mixer.keys()),
-        "dataset_tags": list(data_args.dataset_mixer.keys()),
-        "tags": ["alignment-handbook"],
-    }
-    if trainer.accelerator.is_main_process:
-        trainer.create_model_card(**kwargs)
-        # Restore k,v cache for fast inference
-        trainer.model.config.use_cache = True
-        trainer.model.config.save_pretrained(training_args.output_dir)
+    # kwargs = {
+    #     "finetuned_from": model_args.model_name_or_path,
+    #     "dataset": list(data_args.dataset_mixer.keys()),
+    #     "dataset_tags": list(data_args.dataset_mixer.keys()),
+    #     "tags": ["alignment-handbook"],
+    # }
+    # if trainer.accelerator.is_main_process:
+    #     trainer.create_model_card(**kwargs)
+    #     # Restore k,v cache for fast inference
+    #     trainer.model.config.use_cache = True
+    #     trainer.model.config.save_pretrained(training_args.output_dir)
 
     ##########
     # Evaluate
     ##########
-    if training_args.do_eval:
-        logger.info("*** Evaluate ***")
-        metrics = trainer.evaluate()
-        metrics["eval_samples"] = len(raw_datasets["test"])
-        trainer.log_metrics("eval", metrics)
-        trainer.save_metrics("eval", metrics)
+    # if training_args.do_eval:
+    #     logger.info("*** Evaluate ***")
+    #     metrics = trainer.evaluate()
+    #     metrics["eval_samples"] = len(raw_datasets["test"])
+    #     trainer.log_metrics("eval", metrics)
+    #     trainer.save_metrics("eval", metrics)
 
-    if training_args.push_to_hub is True:
-        logger.info("Pushing to hub...")
-        trainer.push_to_hub(**kwargs)
+    # if training_args.push_to_hub is True:
+    #     logger.info("Pushing to hub...")
+    #     trainer.push_to_hub(**kwargs)
 
-    logger.info("*** Training complete! ***")
+    # logger.info("*** Training complete! ***")
 
 
 if __name__ == "__main__":

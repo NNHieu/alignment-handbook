@@ -165,3 +165,5 @@ wandb/
 
 # symlink
 data
+
+eval_outputs/

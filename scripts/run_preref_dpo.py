@@ -39,7 +39,7 @@ from alignment import (
 from peft import PeftConfig, PeftModel
 # from trl import DPOTrainer
 import sys
-sys.path.append("/home/tunghoang/hieunn/Alignment/alignment-handbook")
+sys.path.append("/home/ubuntu/hieu.nn/Lang/alignment-handbook")
 from src.alignment.configs import DPOConfig
 from src.custom_trainers.dpo_trainer import DPOTrainer
 
