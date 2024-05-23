@@ -35,7 +35,7 @@ optim: adamw_torch
 output_dir: data/stablelm-2-1_6b-spin-kto-0-full
 per_device_train_batch_size: 1
 per_device_eval_batch_size: 8
-push_to_hub: true
+push_to_hub: false
 save_strategy: "steps"
 save_steps: 100
 save_total_limit: 1

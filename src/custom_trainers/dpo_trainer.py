@@ -465,7 +465,7 @@ class DPOTrainer(Trainer):
         model.eval()
         return model
 
-    def get_train_dataloader(self) -> DataLoader:
+    def get_train_dataloader(self, selected_ids=None) -> DataLoader:
         """
         Returns the training [`~torch.utils.data.DataLoader`].
 
@@ -474,6 +474,13 @@ class DPOTrainer(Trainer):
         precompute_ref_log_probs_path = Path(self.precompute_ref_log_probs_path)
         if self.precompute_ref_log_probs and (not self._precomputed_train_ref_log_probs) and precompute_ref_log_probs_path.exists():
             all_reference_chosen_logps, all_reference_rejected_logps = torch.load(precompute_ref_log_probs_path, map_location="cpu")
+            if selected_ids is not None:
+                all_reference_chosen_logps = all_reference_chosen_logps[selected_ids]
+                all_reference_rejected_logps = all_reference_rejected_logps[selected_ids]
+                print("-------")
+                print(all_reference_chosen_logps)
+                print(all_reference_rejected_logps)
+
             self.train_dataset = self.train_dataset.add_column(
                 name="reference_chosen_logps", column=all_reference_chosen_logps
             )

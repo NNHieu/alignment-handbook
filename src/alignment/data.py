@@ -19,7 +19,7 @@ from typing import Any, List, Literal, Optional
 from datasets import DatasetDict, concatenate_datasets, load_dataset, load_from_disk
 from datasets.builder import DatasetGenerationError
 
-from .configs import DataArguments
+from .configs import DataArguments, LargeMarginPreferenceDataArguments
 
 
 DEFAULT_CHAT_TEMPLATE = "{% for message in messages %}\n{% if message['role'] == 'user' %}\n{{ '<|user|>\n' + message['content'] + eos_token }}\n{% elif message['role'] == 'system' %}\n{{ '<|system|>\n' + message['content'] + eos_token }}\n{% elif message['role'] == 'assistant' %}\n{{ '<|assistant|>\n'  + message['content'] + eos_token }}\n{% endif %}\n{% if loop.last and add_generation_prompt %}\n{{ '<|assistant|>' }}\n{% endif %}\n{% endfor %}"
@@ -148,7 +148,14 @@ def get_datasets(
     Returns
         [`DatasetDict`]: The dataset dictionary containing the loaded datasets.
     """
-    if type(data_config) is DataArguments:
+    if type(data_config) is LargeMarginPreferenceDataArguments:
+        # Structure of the config to read the datasets and their mix
+        # datasets_mixer:
+        #     - 'dataset1': 0.5
+        #     - 'dataset2': 0.3
+        #     - 'dataset3': 0.2
+        dataset_mixer = data_config.dataset_mixer
+    elif type(data_config) is DataArguments:
         # Structure of the config to read the datasets and their mix
         # datasets_mixer:
         #     - 'dataset1': 0.5

@@ -15,18 +15,19 @@ import pandas as pd
 import gc
 import os
 from vllm.model_executor.parallel_utils.parallel_state import destroy_model_parallel
-os.environ["CUDA_VISIBLE_DEVICES"] = '2,3,4,5'
+# os.environ["CUDA_VISIBLE_DEVICES"] = '2,3,4,5'
 import argparse
 
 def get_outdir(model_alias):
-    output_dir = Path('data/generated_responses/')
+    output_dir = Path('data/generated_sft_data/')
     output_dir /= model_alias
+    return output_dir
 
 
 def parse_arguments():
     """Parse command line arguments."""
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', type=str, default='UCLA-AGI/zephyr-7b-sft-full-SPIN-iter0')
+    parser.add_argument('--model', type=str, required=True)
     parser.add_argument('--model_alias', type=str, required=True)
     parser.add_argument('--data_frac', type=int, default=0)
     parser.add_argument('--frac_len', type=int, default=0)
@@ -86,28 +87,28 @@ appliedtemplate_datasets = dataset.map(
 
 llm = LLM(
     model=model_path,
-    tensor_parallel_size=4,
-    gpu_memory_utilization=0.4, 
+    tensor_parallel_size=1,
+    gpu_memory_utilization=0.8, 
 )
 # sampling_params = SamplingParams(temperature=1.0, top_p=1.0, max_tokens=256)
 # results_gathered = list(map(lambda x: x.outputs[0].text, 
 #                                   llm.generate(appliedtemplate_datasets['prompt_text'], sampling_params)))
 # results = [r.replace("</s>","").lstrip() for r in results_gathered]
-sampling_params = SamplingParams(temperature=1.0, top_p=1.0, max_tokens=256, logprobs=1, prompt_logprobs=1)
+sampling_params = SamplingParams(temperature=1.0, top_p=1.0, max_tokens=1024)
 results_gathered = llm.generate(appliedtemplate_datasets['prompt_text'], sampling_params)
 results = []
-prompt_logprobs = []
-logprobs = []
-cummulative_logprobs = []
+# prompt_logprobs = []
+# logprobs = []
+# cummulative_logprobs = []
 
 for i in range(len(results_gathered)):
     results.append(results_gathered[i].outputs[0].text.replace("</s>","").lstrip())
-    if results_gathered[i].prompt_logprobs is not None:
-        prompt_logprobs.append([None] + [list(p.values())[0].logprob for p in results_gathered[i].prompt_logprobs[1:]])
-    else:
-        prompt_logprobs.append([None])
-    logprobs.append([list(p.values())[0].logprob for p in results_gathered[i].outputs[0].logprobs])
-    cummulative_logprobs.append(sum(logprobs[-1]))
+    # if results_gathered[i].prompt_logprobs is not None:
+    #     prompt_logprobs.append([None] + [list(p.values())[0].logprob for p in results_gathered[i].prompt_logprobs[1:]])
+    # else:
+    #     prompt_logprobs.append([None])
+    # logprobs.append([list(p.values())[0].logprob for p in results_gathered[i].outputs[0].logprobs])
+    # cummulative_logprobs.append(sum(logprobs[-1]))
 
 # Save the results
 generated_dataset =[]
@@ -115,12 +116,12 @@ for idx in range(len(results)):
     d = {
             "prompt": appliedtemplate_datasets[idx]['prompt'],
             "prompt_id": appliedtemplate_datasets[idx]['prompt_id'],
-            "chosen": appliedtemplate_datasets[idx]['messages'][1:3],
-            "rejected": [appliedtemplate_datasets[idx]['messages'][1],
+            # "chosen": appliedtemplate_datasets[idx]['messages'][1:3],
+            "messages": [appliedtemplate_datasets[idx]['messages'][1],
                         {"role": "assistant", "content": results[idx]}],
-            "rejected_logprobs": cummulative_logprobs[idx],
-            "rejected_token_logprobs": logprobs[idx],
-            "prompt_token_logprobs": prompt_logprobs[idx],
+            # "rejected_logprobs": cummulative_logprobs[idx],
+            # "rejected_token_logprobs": logprobs[idx],
+            # "prompt_token_logprobs": prompt_logprobs[idx],
         }
     generated_dataset.append(d)
 

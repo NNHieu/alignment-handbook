@@ -1,7 +1,7 @@
 import yaml
 from pathlib import Path
 
-def generate_spin_config(template, base_model, generated_dataset_path, iteration, loss_type):
+def generate_spin_config(template, base_model, generated_dataset_path, iteration, loss_type, revision=None):
     with open(template, 'r') as f:
         a = yaml.safe_load(f)
     model_name = base_model.split("/")[-1]
@@ -25,15 +25,15 @@ def generate_spin_config(template, base_model, generated_dataset_path, iteration
         }
     return a
 
-a = generate_spin_config('recipes/stablelm-2-1_6b/spin-dpo/template.yaml', 
-                         '/home/ubuntu/hieu.nn/Lang/alignment-handbook/data/stablelm-2-1_6b-sft-full', 
+a = generate_spin_config('recipes/zephyr-7b-beta/spin/template_dpo_full.yaml', 
+                         'alignment-handbook/zephyr-7b-sft-full', 
                          '/home/ubuntu/hieu.nn/Lang/alignment-handbook/data/spin_data/0_5000', 
                          0, 
                          "sigmoid")
 with open("recipes/stablelm-2-1_6b/spin-dpo/config_full_0.yaml", 'w') as f:
     yaml.safe_dump(a, f)
 
-a = generate_spin_config('recipes/stablelm-2-1_6b/spin-dpo/template.yaml', 
+a = generate_spin_config('recipes/zephyr-7b-beta/spin/template_dpo_full.yaml', 
                          '/home/ubuntu/hieu.nn/Lang/alignment-handbook/data/stablelm-2-1_6b-sft-full', 
                          '/home/ubuntu/hieu.nn/Lang/alignment-handbook/data/spin_data/0_5000', 
                          1, 
@@ -41,7 +41,7 @@ a = generate_spin_config('recipes/stablelm-2-1_6b/spin-dpo/template.yaml',
 with open("recipes/stablelm-2-1_6b/spin-dpo/config_full_1.yaml", 'w') as f:
     yaml.safe_dump(a, f)
 
-a = generate_spin_config('recipes/stablelm-2-1_6b/spin-dpo/template.yaml', 
+a = generate_spin_config('recipes/zephyr-7b-beta/spin/template_dpo_full.yaml', 
                          '/home/ubuntu/hieu.nn/Lang/alignment-handbook/data/stablelm-2-1_6b-sft-full', 
                          '/home/ubuntu/hieu.nn/Lang/alignment-handbook/data/spin_data/0_5000', 
                          2, 
@@ -49,7 +49,7 @@ a = generate_spin_config('recipes/stablelm-2-1_6b/spin-dpo/template.yaml',
 with open("recipes/stablelm-2-1_6b/spin-dpo/config_full_2.yaml", 'w') as f:
     yaml.safe_dump(a, f)
 
-a = generate_spin_config('recipes/stablelm-2-1_6b/spin-dpo/template.yaml', 
+a = generate_spin_config('recipes/zephyr-7b-beta/spin/template_dpo_full.yaml', 
                          '/home/ubuntu/hieu.nn/Lang/alignment-handbook/data/stablelm-2-1_6b-sft-full', 
                          '/home/ubuntu/hieu.nn/Lang/alignment-handbook/data/spin_data/0_5000', 
                          3, 
