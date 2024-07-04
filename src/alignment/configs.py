@@ -112,7 +112,7 @@ class ModelArguments:
 
     base_model_revision: Optional[str] = field(
         default=None,
-        metadata={"help": ("The base model checkpoint for weights initialization with PEFT adatpers.")},
+        metadata={"help": ("The base model checkpoint for weights initialization with PEFT adapters.")},
     )
     model_name_or_path: Optional[str] = field(
         default=None,
@@ -185,6 +185,9 @@ class ModelArguments:
         default="nf4", metadata={"help": "precise the quantization type (fp4 or nf4)"}
     )
     use_bnb_nested_quant: bool = field(default=False, metadata={"help": "use nested quantization"})
+    bnb_4bit_quant_storage: Optional[str] = field(
+        default="uint8", metadata={"help": "storage type to pack the quanitzed 4-bit prarams."}
+    )
 
     def __post_init__(self):
         if self.load_in_8bit and self.load_in_4bit:
